@@ -3,13 +3,15 @@
 
 enum MapleRegion {
 	REGION_KMS = 1,
+	REGION_KMST = 2,
 	REGION_JMS = 3,
 	REGION_CMS = 4,
 	REGION_TWMS = 6,
 	REGION_MSEA = 7,
 	REGION_GMS = 8,
 	REGION_EMS = 9,
-	REGION_BMS,
+	REGION_BMS = 9,
+	REGION_VMS = 99,
 
 };
 
@@ -28,6 +30,7 @@ enum SubControl {
 	BUTTON_MSEA,
 	BUTTON_EMS,
 	BUTTON_KMS,
+	BUTTON_KMST,
 	BUTTON_CMS,
 	BUTTON_GMS,
 	BUTTON_BMS,
@@ -38,7 +41,16 @@ enum SubControl {
 };
 
 void GetHelloPacket(ServerPacket &sp) {
-	if (maple_region != REGION_KMS) {
+	if (maple_region == REGION_VMS) {
+		sp.Encode2(maple_version);
+		sp.Encode4(0xFFFFFFFF); // recv
+		sp.Encode4(0xFFFFFFFF); // send
+		sp.Encode1(maple_region);
+		sp.SetHello();
+		return;
+	}
+
+	if (maple_region != REGION_KMS && maple_region != REGION_KMST) {
 		sp.Encode2(maple_version);
 		sp.EncodeStr(std::to_string(maple_version_sub).c_str());
 	}
@@ -54,6 +66,10 @@ void GetHelloPacket(ServerPacket &sp) {
 	sp.Encode4(0xFFFFFFFF); // recv
 	sp.Encode4(0xFFFFFFFF); // send
 	sp.Encode1(maple_region);
+	if (maple_region == REGION_JMS && 327 <= maple_version) {
+		sp.Encode1(0);
+		sp.Encode1(0);
+	}
 	sp.SetHello();
 }
 
@@ -85,6 +101,8 @@ bool OnCreate(Alice &a) {
 	a.Button(BUTTON_MSEA, L"MSEA", 320, 30, 60);
 	a.Button(BUTTON_CMS, L"CMS", 320, 50, 60);
 	a.Button(BUTTON_GMS, L"GMS", 320, 70, 60);
+	a.Button(BUTTON_VMS, L"VMS", 180, 70, 60);
+	a.Button(BUTTON_KMST, L"KMST", 110, 70, 60);
 
 	a.EditBox(EDIT_HELLO, 3, 100, L"HELLO!", 394);
 	a.ReadOnly(EDIT_HELLO);
@@ -161,6 +179,16 @@ bool OnCommand(Alice &a, int nIDDlgItem) {
 	case BUTTON_BMS:
 	{
 		SetServerVersion(a, REGION_BMS);
+		break;
+	}
+	case BUTTON_VMS:
+	{
+		SetServerVersion(a, REGION_VMS);
+		break;
+	}
+	case BUTTON_KMST:
+	{
+		SetServerVersion(a, REGION_KMST);
 		break;
 	}
 	default :{

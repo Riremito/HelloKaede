@@ -6,7 +6,8 @@ Kyubey::Kyubey(WORD Port, void (*thread)(Kyubey*)){
 	Server = socket(AF_INET, SOCK_STREAM, 0);
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(Port);
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	// INADDR_LOOPBACK
+	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	bind(Server, (sockaddr *)&addr, sizeof(addr));
 	listen(Server, 5);
 	int len = sizeof(addr_client);
