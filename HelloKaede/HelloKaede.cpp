@@ -2,18 +2,44 @@
 #include"../Share/Simple/Simple.h"
 
 enum MapleRegion {
-	REGION_KMS = 1,
-	REGION_KMST = 2,
-	REGION_JMS = 3,
-	REGION_CMS = 4,
-	REGION_TWMS = 6,
-	REGION_MSEA = 7,
-	REGION_GMS = 8,
-	REGION_EMS = 9,
-	REGION_BMS = 9,
-	REGION_VMS = 99,
-
+	REGION_UNKNOWN,
+	REGION_KMS,
+	REGION_KMST,
+	REGION_JMS,
+	REGION_CMS,
+	REGION_TWMS,
+	REGION_MSEA,
+	REGION_GMS,
+	REGION_EMS,
+	REGION_BMS,
+	REGION_VMS,
+	REGION_THMS,
 };
+
+int GetRegionNumber(MapleRegion mr) {
+	switch (mr) {
+	case REGION_KMS:
+		return 1;
+	case REGION_KMST:
+		return 2;
+	case REGION_JMS:
+		return 3;
+	case REGION_CMS:
+		return 4;
+	case REGION_TWMS:
+		return 5;
+	case REGION_THMS:
+	case REGION_MSEA:
+	case REGION_VMS:
+		return 7;
+	case REGION_GMS:
+		return 8;
+	case REGION_EMS:
+	case REGION_BMS:
+		return 9;
+	}
+	return 0;
+}
 
 int maple_version = 194;
 int maple_version_sub = 0;
@@ -45,7 +71,7 @@ void GetHelloPacket(ServerPacket &sp) {
 		sp.Encode2(maple_version);
 		sp.Encode4(0xFFFFFFFF); // recv
 		sp.Encode4(0xFFFFFFFF); // send
-		sp.Encode1(maple_region);
+		sp.Encode1(GetRegionNumber(maple_region));
 		sp.SetHello();
 		return;
 	}
@@ -65,7 +91,7 @@ void GetHelloPacket(ServerPacket &sp) {
 
 	sp.Encode4(0xFFFFFFFF); // recv
 	sp.Encode4(0xFFFFFFFF); // send
-	sp.Encode1(maple_region);
+	sp.Encode1(GetRegionNumber(maple_region));
 	if (maple_region == REGION_JMS && 327 <= maple_version) {
 		sp.Encode1(0);
 		sp.Encode1(0);
@@ -129,7 +155,6 @@ bool SetServerVersion(Alice &a, MapleRegion mr) {
 	maple_version = ver;
 	maple_version_sub = ver_sub;
 	maple_region = mr;
-
 
 	ServerPacket sp;
 	GetHelloPacket(sp);
