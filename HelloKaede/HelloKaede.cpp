@@ -14,11 +14,13 @@ enum MapleRegion {
 	REGION_BMS,
 	REGION_VMS,
 	REGION_THMS,
+	REGION_IMS,
 };
 
 int GetRegionNumber(MapleRegion mr) {
 	switch (mr) {
 	case REGION_KMS:
+	case REGION_IMS:
 		return 1;
 	case REGION_KMST:
 		return 2;
@@ -69,6 +71,17 @@ enum SubControl {
 void GetHelloPacket(ServerPacket &sp) {
 	if (maple_region == REGION_VMS) {
 		sp.Encode2(maple_version);
+		sp.Encode4(0xFFFFFFFF); // recv
+		sp.Encode4(0xFFFFFFFF); // send
+		sp.Encode1(GetRegionNumber(maple_region));
+		sp.SetHello();
+		return;
+	}
+
+	if (maple_region == REGION_IMS) {
+		sp.Encode2(maple_version);
+		sp.Encode1(0);
+		sp.Encode1(maple_version_sub);
 		sp.Encode4(0xFFFFFFFF); // recv
 		sp.Encode4(0xFFFFFFFF); // send
 		sp.Encode1(GetRegionNumber(maple_region));
@@ -129,6 +142,7 @@ bool OnCreate(Alice &a) {
 	a.Button(BUTTON_GMS, L"GMS", 320, 70, 60);
 	a.Button(BUTTON_VMS, L"VMS", 180, 70, 60);
 	a.Button(BUTTON_KMST, L"KMST", 110, 70, 60);
+	a.Button(BUTTON_IMS, L"IMS", 40, 70, 60);
 
 	a.EditBox(EDIT_HELLO, 3, 100, L"HELLO!", 394);
 	a.ReadOnly(EDIT_HELLO);
@@ -214,6 +228,11 @@ bool OnCommand(Alice &a, int nIDDlgItem) {
 	case BUTTON_KMST:
 	{
 		SetServerVersion(a, REGION_KMST);
+		break;
+	}
+	case BUTTON_IMS:
+	{
+		SetServerVersion(a, REGION_IMS);
 		break;
 	}
 	default :{
